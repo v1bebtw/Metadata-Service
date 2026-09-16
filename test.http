@@ -1,0 +1,52 @@
+### Рисунок 4.1 — GET /api/documents (список всех документов)
+GET http://localhost:3000/api/documents
+
+### Рисунок 4.2 — GET /api/documents/1 (документ по ID)
+GET http://localhost:3000/api/documents/1
+
+### Рисунок 4.3 — POST /api/documents (создание, 201)
+POST http://localhost:3000/api/documents
+Content-Type: application/json
+
+{
+  "fileName": "analytics_report.pdf",
+  "fileType": "pdf",
+  "fileSizeBytes": 1048576,
+  "metadata": {
+    "author": "Иванов И.И.",
+    "pages": 24
+  }
+}
+
+### Рисунок 4.4 — PUT /api/documents/1 (полное обновление, 200)
+PUT http://localhost:3000/api/documents/1
+Content-Type: application/json
+
+{
+  "fileName": "diploma_final_v3.docx",
+  "fileType": "docx",
+  "fileSizeBytes": 280000,
+  "metadata": {
+    "author": "Студент",
+    "pages": 50,
+    "software": "Microsoft Office Word"
+  }
+}
+
+### Рисунок 4.5 — DELETE /api/documents/2 (удаление, 200)
+DELETE http://localhost:3000/api/documents/2
+
+### Рисунок 4.6 — GET несуществующего ID (404)
+GET http://localhost:3000/api/documents/999
+
+### Рисунок 4.7 — глобальный обработчик ошибок (500)
+GET http://localhost:3000/test-500
+
+### Дополнительно: POST с неверными данными (400)
+POST http://localhost:3000/api/documents
+Content-Type: application/json
+
+{
+  "fileName": "archive.zip",
+  "fileType": "zip"
+}
