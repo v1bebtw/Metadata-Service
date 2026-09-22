@@ -1,44 +1,53 @@
-# Metadata Service — Lab 2.1
+# Metadata Service — Lab 2.2
 
-REST API на Node.js + Express для управления документами и их метаданными (предметная область курсового проекта).
+REST API на Node.js + Express + Sequelize + PostgreSQL для управления документами и их метаданными.
+
+## Подготовка базы
+
+1. Создайте базу в PostgreSQL:
+
+```sql
+CREATE DATABASE metadata_service;
+```
+
+2. Скопируйте `.env.example` в `.env` и подставьте пароль пользователя `postgres`:
+
+```
+DATABASE_URL=postgres://postgres:YOUR_PASSWORD@127.0.0.1:5432/metadata_service
+PORT=3000
+```
 
 ## Запуск
 
 ```bash
 npm install
-npm run dev    # nodemon (режим разработки)
-npm start      # обычный запуск
+npx sequelize-cli db:migrate
+npx sequelize-cli db:seed:all
+npm run dev
 ```
 
 Сервер: `http://localhost:3000`
 
+## Модель Document
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | INTEGER | Первичный ключ |
+| fileName | STRING | Имя файла |
+| fileType | STRING | pdf / docx / image |
+| fileSizeBytes | INTEGER | Размер в байтах |
+| uploadDate | DATE | Дата загрузки |
+| metadata | JSONB | Автор, страницы и др. |
+| status | STRING | Поле из миграции: uploaded / processing / ready |
+
 ## Маршруты
 
-| Метод  | URL                    | Описание              | Успех | Ошибки   |
-|--------|------------------------|-----------------------|-------|----------|
-| GET    | `/api/documents`       | Список всех документов| 200   | —        |
-| GET    | `/api/documents/:id`   | Документ по ID        | 200   | 404      |
-| POST   | `/api/documents`       | Создать документ      | 201   | 400      |
-| PUT    | `/api/documents/:id`   | Полное обновление     | 200   | 400, 404 |
-| DELETE | `/api/documents/:id`   | Удалить документ      | 200   | 404      |
+| Метод  | URL                    | Sequelize              | Успех | Ошибки   |
+|--------|------------------------|------------------------|-------|----------|
+| GET    | `/api/documents`       | `Document.findAll()`   | 200   | —        |
+| GET    | `/api/documents/:id`   | `Document.findByPk()`  | 200   | 404      |
+| POST   | `/api/documents`       | `Document.create()`    | 201   | 400      |
+| PUT    | `/api/documents/:id`   | `Document.update()`    | 200   | 400, 404 |
+| DELETE | `/api/documents/:id`   | `Document.destroy()`   | 200   | 404      |
 
-## Пример создания документа
-
-```http
-POST http://localhost:3000/api/documents
-Content-Type: application/json
-
-{
-  "fileName": "report.pdf",
-  "fileType": "pdf",
-  "fileSizeBytes": 1048576,
-  "metadata": {
-    "author": "Иванов И.И.",
-    "pages": 24
-  }
-}
-```
-
-Допустимые `fileType`: `pdf`, `docx`, `image`.
-
-Тестовые запросы также есть в файле `test.http` (REST Client для VS Code / Cursor).
+Тестовые запросы: `test.http`.
