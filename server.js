@@ -2,9 +2,9 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// Middleware для парсинга JSON и URL-encoded тел запросов
+// Middleware для парсинга JSON 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true })); URL-encoded тел запросов
 
 // Временное хранилище метаданных (в памяти сервера)
 let documents = [
@@ -39,7 +39,7 @@ let nextId = 3;
 
 // 1. GET /api/documents — Все документы
 app.get('/api/documents', (req, res) => {
-  res.status(200).json({
+  res.status(200).json({ // 200 OK
     success: true,
     count: documents.length,
     data: documents
@@ -52,13 +52,13 @@ app.get('/api/documents/:id', (req, res) => {
   const doc = documents.find(d => d.id === id);
 
   if (!doc) {
-    return res.status(404).json({
+    return res.status(404).json({ // 404 Not Found
       success: false,
       error: `Документ с ID ${id} не найден`
     });
   }
 
-  res.status(200).json({
+  res.status(200).json({ // 200 OK
     success: true,
     data: doc
   });
@@ -70,7 +70,7 @@ app.post('/api/documents', (req, res) => {
 
   // Валидация входных данных (ошибка 400)
   if (!fileName || !fileType) {
-    return res.status(400).json({
+    return res.status(400).json({ // 400 Bad Request
       success: false,
       error: "Поля 'fileName' и 'fileType' обязательны!"
     });
@@ -95,7 +95,7 @@ app.post('/api/documents', (req, res) => {
 
   documents.push(newDoc);
 
-  res.status(201).json({
+  res.status(201).json({ // 201 - Created
     success: true,
     data: newDoc
   });
@@ -107,7 +107,7 @@ app.put('/api/documents/:id', (req, res) => {
   const docIndex = documents.findIndex(d => d.id === id);
 
   if (docIndex === -1) {
-    return res.status(404).json({
+    return res.status(404).json({ // 404 Not Found
       success: false,
       error: `Документ с ID ${id} не найден`
     });
@@ -116,7 +116,7 @@ app.put('/api/documents/:id', (req, res) => {
   const { fileName, fileType, fileSizeBytes, metadata } = req.body;
 
   if (!fileName || !fileType) {
-    return res.status(400).json({
+    return res.status(400).json({ // 400 Bad Request
       success: false,
       error: "Поля 'fileName' и 'fileType' обязательны для обновления"
     });
@@ -131,7 +131,7 @@ app.put('/api/documents/:id', (req, res) => {
     metadata: metadata || {}
   };
 
-  res.status(200).json({
+  res.status(200).json({ // 200 OK
     success: true,
     data: documents[docIndex]
   });
@@ -143,7 +143,7 @@ app.delete('/api/documents/:id', (req, res) => {
   const docIndex = documents.findIndex(d => d.id === id);
 
   if (docIndex === -1) {
-    return res.status(404).json({
+    return res.status(404).json({ // 404 Not Found
       success: false,
       error: `Документ с ID ${id} не найден`
     });
@@ -151,7 +151,7 @@ app.delete('/api/documents/:id', (req, res) => {
 
   const deleted = documents.splice(docIndex, 1);
 
-  res.status(200).json({
+  res.status(200).json({ // 200 OK
     success: true,
     message: `Документ с ID ${id} удален`,
     data: deleted[0]

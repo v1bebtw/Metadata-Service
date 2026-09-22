@@ -50,3 +50,6 @@ Content-Type: application/json
   "fileName": "archive.zip",
   "fileType": "zip"
 }
+
+### Проверка ошибки 404 для неизвестного маршрута
+GET http://localhost:3000/api/gg
