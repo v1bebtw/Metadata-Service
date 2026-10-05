@@ -1,23 +1,14 @@
-# Metadata Service — Lab 2.2
+# Metadata Service — Lab 2.3
 
-REST API на Node.js + Express + Sequelize + PostgreSQL для управления документами и их метаданными.
+REST API документов с JWT-аутентификацией и ролями (user / admin).
 
-## Подготовка базы
-
-1. Создайте базу в PostgreSQL:
-
-```sql
-CREATE DATABASE metadata_service;
-```
-
-2. Скопируйте `.env.example` в `.env` и подставьте пароль пользователя `postgres`:
+## Подготовка
 
 ```
 DATABASE_URL=postgres://postgres:YOUR_PASSWORD@127.0.0.1:5432/metadata_service
 PORT=3000
+JWT_SECRET=replace_with_a_long_random_string
 ```
-
-## Запуск
 
 ```bash
 npm install
@@ -26,28 +17,21 @@ npx sequelize-cli db:seed:all
 npm run dev
 ```
 
-Сервер: `http://localhost:3000`
+Демо-пользователи из seed:
 
-## Модель Document
+| Email | Пароль | Роль |
+|-------|--------|------|
+| admin@metadata.local | admin123 | admin |
+| user@metadata.local | user123 | user |
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| id | INTEGER | Первичный ключ |
-| fileName | STRING | Имя файла |
-| fileType | STRING | pdf / docx / image |
-| fileSizeBytes | INTEGER | Размер в байтах |
-| uploadDate | DATE | Дата загрузки |
-| metadata | JSONB | Автор, страницы и др. |
-| status | STRING | Поле из миграции: uploaded / processing / ready |
+## Auth
 
-## Маршруты
+| Метод | URL | Описание | Токен |
+|-------|-----|----------|-------|
+| POST | `/auth/register` | Регистрация | нет |
+| POST | `/auth/login` | Вход, JWT на 1 час | нет |
+| GET | `/profile` | Текущий пользователь | Bearer |
+| GET | `/api/users` | Список пользователей | Bearer + admin |
+| GET/POST/PUT/DELETE | `/api/documents` | CRUD документов | Bearer |
 
-| Метод  | URL                    | Sequelize              | Успех | Ошибки   |
-|--------|------------------------|------------------------|-------|----------|
-| GET    | `/api/documents`       | `Document.findAll()`   | 200   | —        |
-| GET    | `/api/documents/:id`   | `Document.findByPk()`  | 200   | 404      |
-| POST   | `/api/documents`       | `Document.create()`    | 201   | 400      |
-| PUT    | `/api/documents/:id`   | `Document.update()`    | 200   | 400, 404 |
-| DELETE | `/api/documents/:id`   | `Document.destroy()`   | 200   | 404      |
-
-Тестовые запросы: `test.http`.
+Пользователь видит только свои документы, администратор — все.

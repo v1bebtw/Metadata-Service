@@ -1,11 +1,58 @@
-### GET /api/documents (список из PostgreSQL)
+### Регистрация (201)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "password": "secret123"
+}
+
+### Вход обычного пользователя (200 + token)
+# @name loginUser
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@metadata.local",
+  "password": "user123"
+}
+
+### Вход администратора
+# @name loginAdmin
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@metadata.local",
+  "password": "admin123"
+}
+
+### Профиль текущего пользователя (200)
+GET http://localhost:3000/profile
+Authorization: Bearer {{loginUser.response.body.token}}
+
+### Профиль без токена (401)
+GET http://localhost:3000/profile
+
+### Список пользователей — только admin (200)
+GET http://localhost:3000/api/users
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Список пользователей от user (403)
+GET http://localhost:3000/api/users
+Authorization: Bearer {{loginUser.response.body.token}}
+
+### Документы текущего пользователя
 GET http://localhost:3000/api/documents
+Authorization: Bearer {{loginUser.response.body.token}}
 
-### GET /api/documents/1
-GET http://localhost:3000/api/documents/1
+### Все документы (admin)
+GET http://localhost:3000/api/documents
+Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### POST /api/documents (создание, 201)
+### Создать документ (201)
 POST http://localhost:3000/api/documents
+Authorization: Bearer {{loginUser.response.body.token}}
 Content-Type: application/json
 
 {
@@ -19,8 +66,13 @@ Content-Type: application/json
   }
 }
 
-### PUT /api/documents/1 (полное обновление, 200)
+### Документ по ID
+GET http://localhost:3000/api/documents/1
+Authorization: Bearer {{loginUser.response.body.token}}
+
+### Обновить документ
 PUT http://localhost:3000/api/documents/1
+Authorization: Bearer {{loginUser.response.body.token}}
 Content-Type: application/json
 
 {
@@ -29,26 +81,10 @@ Content-Type: application/json
   "fileSizeBytes": 280000,
   "status": "ready",
   "metadata": {
-    "author": "Студент",
-    "pages": 50,
-    "software": "Microsoft Office Word"
+    "pages": 50
   }
 }
 
-### DELETE /api/documents/2
+### Удалить документ
 DELETE http://localhost:3000/api/documents/2
-
-### GET несуществующего ID (404)
-GET http://localhost:3000/api/documents/999
-
-### Глобальный обработчик ошибок (500)
-GET http://localhost:3000/test-500
-
-### POST с неверными данными (400)
-POST http://localhost:3000/api/documents
-Content-Type: application/json
-
-{
-  "fileName": "archive.zip",
-  "fileType": "zip"
-}
+Authorization: Bearer {{loginAdmin.response.body.token}}

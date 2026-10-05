@@ -1,7 +1,10 @@
 require('dotenv').config();
 
 const express = require('express');
-const { sequelize, Document } = require('./models');
+const { sequelize, Document, User } = require('./models');
+const authRoutes = require('./routes/auth');
+const { authenticate } = require('./middleware/auth');
+const { isAdmin } = require('./middleware/isAdmin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +13,8 @@ const ALLOWED_STATUSES = ['uploaded', 'processing', 'ready'];
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/auth', authRoutes);
 
 function validateDocument(body) {
   const { fileName, fileType, status } = body;
@@ -40,10 +45,55 @@ function buildPayload(body) {
   };
 }
 
-// GET /api/documents — все документы
-app.get('/api/documents', async (req, res, next) => {
+function canAccessDocument(user, doc) {
+  return user.role === 'admin' || doc.userId === user.id;
+}
+
+app.get('/profile', authenticate, async (req, res, next) => {
   try {
-    const documents = await Document.findAll({ order: [['id', 'ASC']] });
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Пользователь не найден'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user.toSafeJSON()
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/users', authenticate, isAdmin, async (req, res, next) => {
+  try {
+    const users = await User.findAll({
+      attributes: ['id', 'email', 'role', 'createdAt'],
+      order: [['id', 'ASC']]
+    });
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/documents', authenticate, async (req, res, next) => {
+  try {
+    const where = req.user.role === 'admin' ? {} : { userId: req.user.id };
+    const documents = await Document.findAll({
+      where,
+      order: [['id', 'ASC']]
+    });
+
     res.status(200).json({
       success: true,
       count: documents.length,
@@ -54,8 +104,7 @@ app.get('/api/documents', async (req, res, next) => {
   }
 });
 
-// GET /api/documents/:id — документ по ID
-app.get('/api/documents/:id', async (req, res, next) => {
+app.get('/api/documents/:id', authenticate, async (req, res, next) => {
   try {
     const doc = await Document.findByPk(req.params.id);
 
@@ -66,55 +115,68 @@ app.get('/api/documents/:id', async (req, res, next) => {
       });
     }
 
+    if (!canAccessDocument(req.user, doc)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Нет доступа к этому документу'
+      });
+    }
+
     res.status(200).json({ success: true, data: doc });
   } catch (err) {
     next(err);
   }
 });
 
-// POST /api/documents — создать документ
-app.post('/api/documents', async (req, res, next) => {
+app.post('/api/documents', authenticate, async (req, res, next) => {
   try {
     const error = validateDocument(req.body);
     if (error) {
       return res.status(400).json({ success: false, error });
     }
 
-    const doc = await Document.create(buildPayload(req.body));
+    const doc = await Document.create({
+      ...buildPayload(req.body),
+      userId: req.user.id
+    });
+
     res.status(201).json({ success: true, data: doc });
   } catch (err) {
     next(err);
   }
 });
 
-// PUT /api/documents/:id — полное обновление
-app.put('/api/documents/:id', async (req, res, next) => {
+app.put('/api/documents/:id', authenticate, async (req, res, next) => {
   try {
     const error = validateDocument(req.body);
     if (error) {
       return res.status(400).json({ success: false, error });
     }
 
-    const [updated] = await Document.update(buildPayload(req.body), {
-      where: { id: req.params.id }
-    });
+    const doc = await Document.findByPk(req.params.id);
 
-    if (!updated) {
+    if (!doc) {
       return res.status(404).json({
         success: false,
         error: `Документ с ID ${req.params.id} не найден`
       });
     }
 
-    const doc = await Document.findByPk(req.params.id);
+    if (!canAccessDocument(req.user, doc)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Нет доступа к этому документу'
+      });
+    }
+
+    await doc.update(buildPayload(req.body));
     res.status(200).json({ success: true, data: doc });
   } catch (err) {
     next(err);
   }
 });
 
-// DELETE /api/documents/:id — удалить документ
-app.delete('/api/documents/:id', async (req, res, next) => {
+app.delete('/api/documents/:id', authenticate, async (req, res, next) => {
   try {
     const doc = await Document.findByPk(req.params.id);
 
@@ -125,7 +187,14 @@ app.delete('/api/documents/:id', async (req, res, next) => {
       });
     }
 
-    await Document.destroy({ where: { id: req.params.id } });
+    if (!canAccessDocument(req.user, doc)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Нет доступа к этому документу'
+      });
+    }
+
+    await doc.destroy();
 
     res.status(200).json({
       success: true,
@@ -152,13 +221,17 @@ app.use((err, req, res, next) => {
 
 async function start() {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('Не задана переменная JWT_SECRET в .env');
+    }
+
     await sequelize.authenticate();
     console.log('Подключение к PostgreSQL установлено');
     app.listen(PORT, () => {
       console.log(`Сервер запущен: http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error('Не удалось подключиться к базе данных:', err.message);
+    console.error('Не удалось запустить сервер:', err.message);
     process.exit(1);
   }
 }

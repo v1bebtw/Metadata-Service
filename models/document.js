@@ -4,7 +4,10 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Document extends Model {
     static associate(models) {
-      // связи появятся при развитии курсового проекта
+      Document.belongsTo(models.User, {
+        foreignKey: 'userId',
+        as: 'owner'
+      });
     }
   }
 
@@ -36,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'uploaded'
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     sequelize,
