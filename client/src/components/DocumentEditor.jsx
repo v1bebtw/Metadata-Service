@@ -10,7 +10,7 @@ function DocumentEditor({
   return (
     <aside className="card form-card">
       <h2>{editingId !== null ? 'Редактирование' : 'Новый документ'}</h2>
-      <p className="hint">Данные остаются в браузере после перезагрузки.</p>
+      <p className="hint">Данные сохраняются на сервере. Список обновляется сразу, затем подтверждается ответом API.</p>
 
       <form onSubmit={onSubmit}>
         <label>

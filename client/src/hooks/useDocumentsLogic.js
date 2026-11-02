@@ -3,18 +3,28 @@ import { useDocuments } from './useDocuments.js';
 import { useDocumentForm } from './useDocumentForm.js';
 import { useDocumentFilter } from './useDocumentFilter.js';
 
-export function useDocumentsLogic() {
-  const { documents, addDocument, updateDocument, removeDocument } = useDocuments();
+export function useDocumentsLogic(enabled) {
+  const {
+    documents,
+    loading,
+    error,
+    attempt,
+    loadDocuments,
+    addDocument,
+    updateDocument,
+    removeDocument
+  } = useDocuments(enabled);
   const formState = useDocumentForm();
   const { filterType, setFilterType, visible } = useDocumentFilter(documents);
   const [notice, setNotice] = useState('');
+  const [noticeTone, setNoticeTone] = useState('ok');
 
   useEffect(() => {
-    document.title = `Документы (${documents.length})`;
+    document.title = enabled ? `Документы (${documents.length})` : 'Metadata Service';
     return () => {
       document.title = 'Metadata Service';
     };
-  }, [documents.length]);
+  }, [documents.length, enabled]);
 
   const stats = {
     total: documents.length,
@@ -23,35 +33,57 @@ export function useDocumentsLogic() {
     image: documents.filter((d) => d.fileType === 'image').length
   };
 
-  function handleSubmit(event) {
+  function showNotice(message, tone = 'ok') {
+    setNoticeTone(tone);
+    setNotice(message);
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
     const payload = formState.toPayload();
     if (!payload.fileName) return;
 
     if (formState.editingId !== null) {
-      updateDocument(formState.editingId, payload);
-      setNotice('Документ обновлён');
+      const result = await updateDocument(formState.editingId, payload);
+      if (!result.ok) {
+        showNotice(result.error, 'error');
+        return;
+      }
+      showNotice('Документ обновлён');
     } else {
-      addDocument(payload);
-      setNotice('Документ добавлен');
+      const result = await addDocument(payload);
+      if (!result.ok) {
+        showNotice(result.error, 'error');
+        return;
+      }
+      showNotice('Документ добавлен');
     }
 
     formState.resetForm();
   }
 
-  function handleRemove(id) {
-    removeDocument(id);
+  async function handleRemove(id) {
+    const result = await removeDocument(id);
+    if (!result.ok) {
+      showNotice(result.error, 'error');
+      return;
+    }
     if (formState.editingId === id) formState.resetForm();
-    setNotice('Документ удалён');
+    showNotice('Документ удалён');
   }
 
   return {
     documents,
     visible,
     stats,
+    loading,
+    error,
+    attempt,
+    loadDocuments,
     filterType,
     setFilterType,
     notice,
+    noticeTone,
     setNotice,
     handleSubmit,
     handleRemove,

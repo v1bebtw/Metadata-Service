@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const cors = require('cors');
 const { sequelize, Document, User } = require('./models');
 const authRoutes = require('./routes/auth');
 const { authenticate } = require('./middleware/auth');
@@ -11,6 +12,9 @@ const PORT = process.env.PORT || 3000;
 const ALLOWED_TYPES = ['pdf', 'docx', 'image'];
 const ALLOWED_STATUSES = ['uploaded', 'processing', 'ready'];
 
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -72,6 +72,67 @@ body {
   color: #0f6e56;
 }
 
+.notice-error {
+  background: #fde8e8;
+  border-color: #f0c2c2;
+  color: #9b2c2c;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-card {
+  max-width: 420px;
+}
+
+.login-card form {
+  grid-template-columns: 1fr;
+}
+
+.form-error {
+  margin: 0;
+  color: #9b2c2c;
+  font-size: 0.9rem;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: white;
+  border: 1px solid #d7e2dc;
+}
+
+.banner-error {
+  justify-content: space-between;
+  background: #fde8e8;
+  border-color: #f0c2c2;
+  color: #9b2c2c;
+}
+
+.banner-error p {
+  margin: 0;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d7e2dc;
+  border-top-color: #0f6e56;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(260px, 280px) minmax(0, 1fr);
@@ -213,6 +274,11 @@ button.secondary {
 
 button.danger {
   background: #c04545;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: default;
 }
 
 .row-actions button {
