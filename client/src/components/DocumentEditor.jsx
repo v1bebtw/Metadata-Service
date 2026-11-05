@@ -21,7 +21,6 @@ function DocumentEditor({
             onChange={onChange}
             placeholder="report.pdf"
             required
-            minLength={2}
           />
         </label>
 

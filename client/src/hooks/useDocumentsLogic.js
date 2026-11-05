@@ -27,10 +27,6 @@ export function useDocumentsLogic() {
     event.preventDefault();
     const payload = formState.toPayload();
     if (!payload.fileName) return;
-    if (payload.fileName.length < 2) {
-      setNotice('Имя файла должно содержать не менее 2 символов');
-      return;
-    }
 
     if (formState.editingId !== null) {
       updateDocument(formState.editingId, payload);
