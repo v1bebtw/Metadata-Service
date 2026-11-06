@@ -7,18 +7,35 @@ function DocumentEditor({
   onSubmit,
   onCancel
 }) {
+  function handleNameChange(event) {
+    event.target.setCustomValidity('');
+    onChange(event);
+  }
+
+  function handleFormSubmit(event) {
+    const nameInput = event.target.elements.fileName;
+    if (nameInput?.value && !String(nameInput.value).trim()) {
+      event.preventDefault();
+      nameInput.setCustomValidity('Имя файла не должно состоять только из пробелов');
+      nameInput.reportValidity();
+      return;
+    }
+    nameInput?.setCustomValidity('');
+    onSubmit(event);
+  }
+
   return (
     <aside className="card form-card">
       <h2>{editingId !== null ? 'Редактирование' : 'Новый документ'}</h2>
       <p className="hint">Данные сохраняются на сервере. Список обновляется сразу, затем подтверждается ответом API.</p>
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleFormSubmit}>
         <label>
           Имя файла
           <input
             name="fileName"
             value={form.fileName}
-            onChange={onChange}
+            onChange={handleNameChange}
             placeholder="report.pdf"
             required
           />
