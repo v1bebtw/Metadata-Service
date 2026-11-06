@@ -26,10 +26,7 @@ export function useDocumentsLogic() {
   function handleSubmit(event) {
     event.preventDefault();
     const payload = formState.toPayload();
-    if (!payload.fileName) {
-      setNotice('Имя файла обязательно');
-      return;
-    }
+    if (!payload.fileName) return;
 
     if (formState.editingId !== null) {
       updateDocument(formState.editingId, payload);
