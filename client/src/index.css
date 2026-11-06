@@ -94,7 +94,7 @@ body {
 }
 
 .list-card {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 h2 {
@@ -237,8 +237,12 @@ td {
 }
 
 td:first-child {
-  white-space: normal;
-  width: 42%;
+  white-space: nowrap;
+  width: auto;
+}
+
+td:first-child strong {
+  white-space: nowrap;
 }
 
 th:last-child,
