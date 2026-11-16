@@ -3,7 +3,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { sequelize, Document, User } = require('./models');
+const { connectMongo } = require('./mongo/connect');
 const authRoutes = require('./routes/auth');
+const mongoDocumentRoutes = require('./routes/mongoDocuments');
 const { authenticate } = require('./middleware/auth');
 const { isAdmin } = require('./middleware/isAdmin');
 
@@ -210,6 +212,8 @@ app.delete('/api/documents/:id', authenticate, async (req, res, next) => {
   }
 });
 
+app.use('/api/mongo/documents', mongoDocumentRoutes);
+
 app.get('/test-500', (req, res, next) => {
   next(new Error('Тестовая внутренняя ошибка сервера'));
 });
@@ -231,6 +235,9 @@ async function start() {
 
     await sequelize.authenticate();
     console.log('Подключение к PostgreSQL установлено');
+
+    await connectMongo();
+
     app.listen(PORT, () => {
       console.log(`Сервер запущен: http://localhost:${PORT}`);
     });
