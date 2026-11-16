@@ -155,7 +155,7 @@ body {
 }
 
 .list-card {
-  overflow-x: visible;
+  overflow-x: auto;
 }
 
 h2 {
@@ -182,7 +182,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
@@ -290,7 +291,7 @@ button:disabled {
 table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 th,
@@ -303,11 +304,14 @@ td {
 }
 
 td:first-child {
-  white-space: nowrap;
-  width: auto;
+  width: 42%;
+  overflow: hidden;
 }
 
-td:first-child strong {
+td:first-child strong,
+td:first-child .meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

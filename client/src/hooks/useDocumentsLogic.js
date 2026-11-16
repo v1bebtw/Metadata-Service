@@ -42,6 +42,14 @@ export function useDocumentsLogic(enabled) {
     event.preventDefault();
     const payload = formState.toPayload();
     if (!payload.fileName) return;
+    if (payload.fileName.length < 2) {
+      showNotice('Имя файла должно содержать не менее 2 символов', 'error');
+      return;
+    }
+    if (payload.fileSizeBytes > 1000000) {
+      showNotice('Размер файла не может превышать 1 000 000 байт', 'error');
+      return;
+    }
 
     if (formState.editingId !== null) {
       const result = await updateDocument(formState.editingId, payload);
