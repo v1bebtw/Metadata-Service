@@ -38,6 +38,8 @@ function DocumentEditor({
             onChange={handleNameChange}
             placeholder="report.pdf"
             required
+            minLength={2}
+            maxLength={50}
           />
         </label>
 
@@ -56,6 +58,7 @@ function DocumentEditor({
             name="fileSizeBytes"
             type="number"
             min="0"
+            max="1000000"
             value={form.fileSizeBytes}
             onChange={onChange}
             placeholder="1048576"
@@ -73,11 +76,13 @@ function DocumentEditor({
 
         <label>
           Автор
-          <input
+          <textarea
             name="author"
             value={form.author}
             onChange={onChange}
             placeholder="Иванов И.И."
+            rows={2}
+            maxLength={150}
           />
         </label>
 
